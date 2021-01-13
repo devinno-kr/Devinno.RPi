@@ -91,7 +91,7 @@ namespace Devinno.RPi.GPIO
     {
         #region Properties
         public bool Value => Read();
-        
+
         public PullMode InputPullMode
         {
             get => InputPullMode;
@@ -100,11 +100,8 @@ namespace Devinno.RPi.GPIO
                 if (pin == null) throw new Exception("사용 해지된 GP입니다.");
                 else
                 {
-                    lock (_lock)
-                    {
-                        WiringPi.PullUpDnControl(pin.GpioNumber, (int)value);
-                        _InputPullMode = value;
-                    }
+                    WiringPi.PullUpDnControl(pin.GpioNumber, (int)value);
+                    _InputPullMode = value;
                 }
             }
         }
@@ -130,10 +127,7 @@ namespace Devinno.RPi.GPIO
             if (pin == null) throw new Exception("사용 해지된 GP입니다.");
             else
             {
-                lock (_lock)
-                {
-                    return WiringPi.DigitalRead(GpioNumber) != 0;
-                }
+                return WiringPi.DigitalRead(GpioNumber) != 0;
             }
         }
 
@@ -142,19 +136,16 @@ namespace Devinno.RPi.GPIO
             if (pin == null) throw new Exception("사용 해지된 GP입니다.");
             else
             {
-                lock (_lock)
+                var registerResult = WiringPi.WiringPiISR(pin.GpioNumber, (int)GPIO.Edge.Both, () =>
                 {
-                    var registerResult = WiringPi.WiringPiISR(pin.GpioNumber, (int)GPIO.Edge.Both, () =>
+                    if (pin != null)
                     {
-                        if (pin != null)
-                        {
-                            var v = WiringPi.DigitalRead(pin.GpioNumber) != 0;
-                            if (v) Edge?.Invoke(this, new EdgeEventArgs(GPIO.Edge.Rising));
-                            else Edge?.Invoke(this, new EdgeEventArgs(GPIO.Edge.Falling));
-                        }
-                    });
-                    if (registerResult != 0) throw new Exception($"{pin.PinNumber}번 핀이 인터럽트 등록에 실패하였습니다.");
-                }
+                        var v = WiringPi.DigitalRead(pin.GpioNumber) != 0;
+                        if (v) Edge?.Invoke(this, new EdgeEventArgs(GPIO.Edge.Rising));
+                        else Edge?.Invoke(this, new EdgeEventArgs(GPIO.Edge.Falling));
+                    }
+                });
+                if (registerResult != 0) throw new Exception($"{pin.PinNumber}번 핀이 인터럽트 등록에 실패하였습니다. Error Code : {registerResult}.");
             }
         }
         #endregion
@@ -164,7 +155,7 @@ namespace Devinno.RPi.GPIO
     public class Output : GP
     {
         #region Properties
-        public bool Value { get => Read(); set => Write(Value); }
+        public bool Value { get => Read(); set => Write(value); }
 
         public bool IsStartSoftPwm { get; private set; }
         public bool IsStartTone { get; private set; }
@@ -183,10 +174,7 @@ namespace Devinno.RPi.GPIO
             if (pin == null) throw new Exception("사용 해지된 GP입니다.");
             else
             {
-                lock (_lock)
-                {
-                    return WiringPi.DigitalRead(GpioNumber) != 0;
-                }
+                return WiringPi.DigitalRead(GpioNumber) != 0;
             }
         }
 
@@ -195,10 +183,7 @@ namespace Devinno.RPi.GPIO
             if (pin == null) throw new Exception("사용 해지된 GP입니다.");
             else
             {
-                lock (_lock)
-                {
-                    WiringPi.DigitalWrite(GpioNumber, v ? 1 : 0);
-                }
+                WiringPi.DigitalWrite(GpioNumber, v ? 1 : 0);
             }
         }
         #endregion
@@ -208,25 +193,19 @@ namespace Devinno.RPi.GPIO
             if (pin == null) throw new Exception("사용 해지된 GP입니다.");
             else
             {
-                lock (_lock)
-                {
-                    var ret = WiringPi.SoftPwmCreate(pin.GpioNumber, value, range);
-                    if (ret == 0) IsStartSoftPwm = true;
-                    else throw new Exception($"SoftPwm 시작에 실패하였습니다.");
-                }
+                var ret = WiringPi.SoftPwmCreate(pin.GpioNumber, value, range);
+                if (ret == 0) IsStartSoftPwm = true;
+                else throw new Exception($"SoftPwm 시작에 실패하였습니다.");
             }
         }
-        
+
         public void SoftPwm(int value)
         {
             if (pin == null) throw new Exception("사용 해지된 GP입니다.");
             else
             {
-                lock (_lock)
-                {
-                    if (IsStartSoftPwm) WiringPi.SoftPwmWrite(pin.GpioNumber, value);
-                    else throw new Exception($"SoftPwm이 시작되어 있지 않습니다.");
-                }
+                if (IsStartSoftPwm) WiringPi.SoftPwmWrite(pin.GpioNumber, value);
+                else throw new Exception($"SoftPwm이 시작되어 있지 않습니다.");
             }
         }
 
@@ -235,11 +214,8 @@ namespace Devinno.RPi.GPIO
             if (pin == null) throw new Exception("사용 해지된 GP입니다.");
             else
             {
-                lock (_lock)
-                {
-                    if (IsStartSoftPwm) WiringPi.SoftPwmStop(pin.GpioNumber);
-                    else throw new Exception($"SoftPwm이 시작되어 있지 않습니다");
-                }
+                if (IsStartSoftPwm) WiringPi.SoftPwmStop(pin.GpioNumber);
+                else throw new Exception($"SoftPwm이 시작되어 있지 않습니다");
             }
         }
         #endregion
@@ -249,12 +225,9 @@ namespace Devinno.RPi.GPIO
             if (pin == null) throw new Exception("사용 해지된 GP입니다.");
             else
             {
-                lock (_lock)
-                {
-                    var ret = WiringPi.SoftToneCreate(pin.GpioNumber);
-                    if (ret == 0) IsStartTone = true;
-                    else throw new Exception($"Tone 시작에 실패하였습니다.");
-                }
+                var ret = WiringPi.SoftToneCreate(pin.GpioNumber);
+                if (ret == 0) IsStartTone = true;
+                else throw new Exception($"Tone 시작에 실패하였습니다.");
             }
         }
 
@@ -263,11 +236,8 @@ namespace Devinno.RPi.GPIO
             if (pin == null) throw new Exception("사용 해지된 GP입니다.");
             else
             {
-                lock (_lock)
-                {
-                    if (IsStartTone) WiringPi.SoftToneWrite(pin.GpioNumber, freq);
-                    else throw new Exception($"Tone 시작되어 있지 않습니다.");
-                }
+                if (IsStartTone) WiringPi.SoftToneWrite(pin.GpioNumber, freq);
+                else throw new Exception($"Tone 시작되어 있지 않습니다.");
             }
         }
 
@@ -276,11 +246,8 @@ namespace Devinno.RPi.GPIO
             if (pin == null) throw new Exception("사용 해지된 GP입니다.");
             else
             {
-                lock (_lock)
-                {
-                    if (IsStartTone) WiringPi.SoftToneStop(pin.GpioNumber);
-                    else throw new Exception($"Tone이 시작되어 있지 않습니다");
-                }
+                if (IsStartTone) WiringPi.SoftToneStop(pin.GpioNumber);
+                else throw new Exception($"Tone이 시작되어 있지 않습니다");
             }
         }
         #endregion
@@ -309,17 +276,14 @@ namespace Devinno.RPi.GPIO
             if (pin == null) throw new Exception("사용 해지된 GP입니다.");
             else
             {
-                
-                lock (_lock)
-                {
-                    this.mode = Mode;
-                    this.range = range;
-                    this.divisor = divisor;
 
-                    WiringPi.PwmSetMode((int)Mode);
-                    WiringPi.PwmSetClock(divisor);
-                    WiringPi.PwmSetRange(range);
-                }
+                this.mode = Mode;
+                this.range = range;
+                this.divisor = divisor;
+
+                WiringPi.PwmSetMode((int)Mode);
+                WiringPi.PwmSetClock(divisor);
+                WiringPi.PwmSetRange(range);
             }
         }
 
@@ -328,20 +292,17 @@ namespace Devinno.RPi.GPIO
             if (pin == null) throw new Exception("사용 해지된 GP입니다.");
             else
             {
-                lock (_lock)
-                {
-                    var m = Pi.Model;
-                    var clk = m == PiModel.PI_MODEL_400 || m == PiModel.PI_MODEL_4B || m == PiModel.PI_MODEL_CM4 ? 54000000 : 19200000;
-                    var divisor = Convert.ToInt32(clk / hz / range);
+                var m = Pi.Model;
+                var clk = m == PiModel.PI_MODEL_400 || m == PiModel.PI_MODEL_4B || m == PiModel.PI_MODEL_CM4 ? 54000000 : 19200000;
+                var divisor = Convert.ToInt32(clk / hz / range);
 
-                    this.mode = Mode;
-                    this.range = range;
-                    this.divisor = divisor;
+                this.mode = Mode;
+                this.range = range;
+                this.divisor = divisor;
 
-                    WiringPi.PwmSetMode((int)Mode);
-                    WiringPi.PwmSetClock(divisor);
-                    WiringPi.PwmSetRange(range);
-                }
+                WiringPi.PwmSetMode((int)Mode);
+                WiringPi.PwmSetClock(divisor);
+                WiringPi.PwmSetRange(range);
             }
         }
 
@@ -350,14 +311,11 @@ namespace Devinno.RPi.GPIO
             if (pin == null) throw new Exception("사용 해지된 GP입니다.");
             else
             {
-                lock (_lock)
-                {
-                    this.range = range;
-                    this.value = value;
+                this.range = range;
+                this.value = value;
 
-                    WiringPi.PwmSetRange(range);
-                    WiringPi.PwmWrite(GpioNumber, value);
-                }
+                WiringPi.PwmSetRange(range);
+                WiringPi.PwmWrite(GpioNumber, value);
             }
         }
 
@@ -366,12 +324,9 @@ namespace Devinno.RPi.GPIO
             if (pin == null) throw new Exception("사용 해지된 GP입니다.");
             else
             {
-                lock (_lock)
-                {
-                    this.value = value;
+                this.value = value;
 
-                    WiringPi.PwmWrite(GpioNumber, value);
-                }
+                WiringPi.PwmWrite(GpioNumber, value);
             }
         }
 
@@ -380,20 +335,17 @@ namespace Devinno.RPi.GPIO
             if (pin == null) throw new Exception("사용 해지된 GP입니다.");
             else
             {
-                lock (_lock)
-                {
-                    var m = Pi.Model;
-                    var clk = m == PiModel.PI_MODEL_400 || m == PiModel.PI_MODEL_4B || m == PiModel.PI_MODEL_CM4 ? 54000000 : 19200000;
-                    var divisor = Convert.ToInt32(clk / hz / range);
+                var m = Pi.Model;
+                var clk = m == PiModel.PI_MODEL_400 || m == PiModel.PI_MODEL_4B || m == PiModel.PI_MODEL_CM4 ? 54000000 : 19200000;
+                var divisor = Convert.ToInt32(clk / hz / range);
 
-                    this.divisor = divisor;
-                    this.range = 1024;
-                    this.value = 512;
+                this.divisor = divisor;
+                this.range = 1024;
+                this.value = 512;
 
-                    WiringPi.PwmSetClock(divisor);
-                    WiringPi.PwmSetRange(range);
-                    WiringPi.PwmWrite(GpioNumber, value);
-                }
+                WiringPi.PwmSetClock(divisor);
+                WiringPi.PwmSetRange(range);
+                WiringPi.PwmWrite(GpioNumber, value);
             }
         }
         #endregion
@@ -414,11 +366,7 @@ namespace Devinno.RPi.GPIO
             if (pin == null) throw new Exception("사용 해지된 GP입니다.");
             else
             {
-
-                lock (_lock)
-                {
-                    WiringPi.GpioClockSet(pin.GpioNumber, freq);
-                }
+                WiringPi.GpioClockSet(pin.GpioNumber, freq);
             }
         }
         #endregion
@@ -460,7 +408,6 @@ namespace Devinno.RPi.GPIO
 
         #region Member Variable
         protected Pin pin;
-        protected readonly object _lock = new object();
         #endregion
 
         #region Constructor
