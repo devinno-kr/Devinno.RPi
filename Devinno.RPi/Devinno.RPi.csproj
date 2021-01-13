@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <Product>Devinno.RPi</Product>
+    <Product></Product>
     <Authors>hy75212</Authors>
     <Company>Devinno</Company>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
