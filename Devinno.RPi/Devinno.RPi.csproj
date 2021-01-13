@@ -8,6 +8,7 @@
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/devinno-kr/Devinno.RPi</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>라즈베리파이 제어 라이브러리</Description>
   </PropertyGroup>
 
   <ItemGroup>
