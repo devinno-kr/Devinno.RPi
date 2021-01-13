@@ -7,6 +7,7 @@
     <Company>Devinno</Company>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/devinno-kr/Devinno.RPi</PackageProjectUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
