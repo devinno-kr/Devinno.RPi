@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Product></Product>
-    <Authors>hy75212</Authors>
+    <Authors>Devinno</Authors>
     <Company>Devinno</Company>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/devinno-kr/Devinno.RPi</PackageProjectUrl>
