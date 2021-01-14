@@ -11,6 +11,10 @@
     <Description>라즈베리파이 제어 라이브러리</Description>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>D:\Project\Devinno\Git\devinno-kr\Devinno.RPi\Devinno.RPi\Devinno.RPi.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Include="..\LICENSE.md">
       <Pack>True</Pack>
